@@ -1,0 +1,5 @@
+python ./usermgmt add ana
+python ./usermgmt passwd ana
+python ./usermgmt forcepass ana
+python ./usermgmt del ana
+python ./login ana

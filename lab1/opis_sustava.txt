@@ -1,0 +1,28 @@
+Inicijalizacija baze
+---------------------
+Prilikom inicijalizacije sustava unosi se "master password" koji štiti cijelu bazu lozinki. 
+On se enkriptira pomoću hash funkcije SHA256 kojom se dobiva heksadekadski hash te on dodatkom nastavka ".txt" tvori naziv baze lozinki 
+(stvori se nova datoteka s tim imenom). Ako se pokuša inicijalizirati nova baza s istim master passwordom, sustav baca grešku. 
+Moguće je inicijalizirati više baza s različitim master passwordima.
+
+Pohrana parova: adresa, lozinka
+--------------------------------
+Prilikom pohrane adrese i lozinke potrebno je navesti i master password koji se ponovo hashira sa SHA256 i dodaje mu se nastavak ".txt" 
+te se uspoređuje s već postojećim nazivom datoteke. Ukoliko se oni podudaraju znači da je korisnik upisao točan master password 
+i uspješno prošao autentifikaciju. Tada se otvara baza lozinki i adresa se hashira pomoću SHA256 hash funkcije. Dobiveni heksadekadski oblik 
+je fiksne duljine. Zatim se funkcijom za derivaciju ključa PBKDF2 generira 32-bajtni ključ koji se podijeli na dva 16-bajtna ključa. 
+Za generiranje ključa koristi se master password i hashirana adresa. Prvi 16-bajtni ključ koristi se za simetričnu enkripciju zaporke pomoću Salsa20 
+algoritma. Salsa20 prilikom enkripcije svaki puta generira slučajan broj koji se koriti samo jednom (nonce) koji spremam u varijablu iv (initial value). 
+Iv je potreban za dekripciju te zato lozinku enkriptiram kao spoj iv-a i same šifrirane lozinke. Na kraju, kako bih osigurala integritet poruke, 
+kriptiranu lozinku štitim HMAC-om kojeg generiram pomoću drugog 16-bajtnog ključa dobivenog derivacijom ključa. Konačna kriptirana lozinka 
+spremljena u datoteku sastoji se od iv-a, originalne lozinke enkriptirane algoritmom Salsa20 te HMAC-a i kodirana je shemom za enkriptiranje base64.
+
+Dohvaćanje lozinke za zadanu adresu
+------------------------------------
+Kako bi se dohvatila tražena lozinka potrebno je ponovo unijeti master password te se korisnika autentificira na isti način kao i prilikom 
+pohrane parova: adresa, lozinka. Nakon toga hashira se adresa pomoću SHA256 i pretražuje datoteka dok se ne nađe podudaranje u hashevima. 
+SHA256 za iste stringove uvijek daje isti hash pa je na taj način moguće pronaći podudaranje. Ako je tražena adresa pronađena u datoteci, 
+u try-except bloku provjerava se integritet lozinke te se ona dekriptira. Derivacijom ključa ponovo nastanu dva ključa. Spremljena enkriptirana lozinka 
+dekriptira se s base64 i podijeli se na MAC koji čini zadnjih 64 bajta i na enkriptiranu poruku koja se sastoji od iv-a (prvih 8 bajtova) i same enkriptirane lozinke. Zatim se lozinka dekriptira 
+algoritmom Salsa20 koristeći prvi ključ i iv. Integritet se provjerava ponovnim generiranjem MAC-a enkriptiranom lozinkom i drugim ključem te 
+verificiranjem MAC-a izdvojenog iz enkriptirane lozinke. Ukoliko je verifikacija uspješna, funkcija vraća lozinku. Inače funkcija vraća pogrešku.

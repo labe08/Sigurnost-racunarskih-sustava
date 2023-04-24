@@ -1,0 +1,32 @@
+Sustav se sastoji od dvije aplikacije.
+
+Prva aplikacija je usermgmt kojom upravlja administrator sustava.
+Prilikom dodavanja novog korisnika, potrebno je upisati lozinku koje se sastoji
+od najmanje 8 znakova od kojih mora postojati barem jedno veliko slovo, 
+barem jedno malo slovo, barem jedan broj i barem jedan specijalan znak 
+te ne smije sadržavati razmake. Korisničko ime se hashira sa SHA256, 
+a lozinka se enkriptira Salsom20 koja daje iv (nasumična vrijednost/salt/seed). 
+Zatim se enkriptirana lozinka zaštiti kriptografskom funkcijom sažetka 
+SHA256 te se zajedno sa iv-om i zastavicom 0 sprema u .txt file. 
+Prilikom korištenja naredbe forcepass administrator postavlja zastavicu 
+koja je spremljena u lozinki na 1. Time označava da određena osoba mora 
+promijeniti lozinku prilikom iduće prijave u sustav. Administrator 
+također može promijeniti lozinku nekog korisnika ili obrisati korisnika.
+
+Druga aplikacija je login i služi za prijavu korisnika u sustav.
+Prilikom prijave u sustav, korisnika se traži da upiše lozinku.
+Nakon toga obavlja se proces autentifikacije. Korisničko ime se hashira
+i traži se podudarnost u .txt file-u. Upisana lozinka se enkriptira 
+Salsom20 sa iv-om upisanim u lozinku u .txt file-u pored korisničkog
+imena koje se podudara sa imenom osobe koja obavlja prijavu. Ako se
+i korisničko ime i lozinka podudaraju s onima spremljenim u sustavu,
+korisnik je uspješno autentificiran. Tada se provjerava stanje zastavice.
+Ukoliko je zastavica 0, ništa se ne događa, no ako je ona 1, sustav
+traži korisnika da promijeni lozinku.
+
+Od zaštita lozinki koristila sam verifikaciju zadanog oblika lozinke, dok
+nisam koristila produljivanje vremena čekanja prilikom upisa krive lozinke
+kao ni zaključavanje mogućnosti prijave prilikom mnogih neuspjelih upisa lozinke
+jer u zadatku piše da pretpostavljamo da samo legitimni korisnici koriste
+aplikaciju za prijavu te sam smatrala kako bi bilo nepotrebno penalizirati
+njihove pogrešne unose lozinke.

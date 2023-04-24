@@ -1,0 +1,13 @@
+Inicijalizacija baze
+--------------------
+python tajnik.py init {master password}
+
+
+Spremanje parova: adresa, lozinka
+---------------------------------
+python tajnik.py put {master password} {adresa} {lozinka}
+
+
+Dohvaćanje lozinke za zadanu adresu
+-----------------------------------
+python tajnik.py get {master password} {adresa}
